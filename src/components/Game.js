@@ -1,15 +1,29 @@
 import React, { useState } from 'react'
 import { gameLogic } from '../GameLogic'
 import Board from './Board'
+import { Timer } from "./timer";
 
 const styles = {
     width: '250px',
     margin: '3rem auto'
 }
 
-const container = {
-    margin: '0 auto',
+const inputContainer = {
+    display: 'inline-block',
+    margin: '3rem 16rem'
 }
+
+const inputBox = (backgroundColor) => ({
+    backgroundColor: backgroundColor || 'salmon',
+    fontSize: '20px',
+    fontWeight: '700',
+    height: '50px',
+    width: '200px',
+    borderRadius: 20,
+    textAlign: 'center',
+    borderWidth: '0',
+    outline: 'none'
+});
 
 const Game = () => {
     const [players, setPlayers] = useState({
@@ -18,7 +32,9 @@ const Game = () => {
     })
     const [board, setBoard] = useState(Array(9).fill(null))
     const [p1IsNext, setP1isNext] = useState(true)
-    const winner = gameLogic(board)
+    const [viewTimer, setViewTimer] = useState(false);
+    const [defaultWinner, setDefaultWinner] = useState(false);
+    let winner = defaultWinner ? p1IsNext ? "O" : "X" : gameLogic(board)
 
     const nameHandler = key => {
         return e => {
@@ -29,38 +45,50 @@ const Game = () => {
         }
     }
 
-    const handleClick = i => {
+    const handleClick = async (i) => {
+        await setViewTimer(false);
         const boardCopy = [...board];
         if (winner || boardCopy[i]) return
         boardCopy[i] = p1IsNext ? 'X' : 'O'
         setBoard(boardCopy)
         setP1isNext(!p1IsNext)
+        await setViewTimer(true);
     }
 
-    const buttonHandler = () => {
-        return <button onClick={() => setBoard(Array(9).fill(null))}>
-            Reset Game!
-        </button>
+    const handleGameReset = async () => {
+        await setViewTimer(false);
+        await setDefaultWinner(false);
+        await setBoard(Array(9).fill(null));
+    }
+
+    const handleGameStart = async () => {
+        await setBoard(Array(9).fill(null));
+        await setDefaultWinner(false);
+        winner = undefined;
+        await setViewTimer(true);
     }
 
     return (
         <>
-            <div style={{ display: 'inline-block', margin: '3rem 16rem' }}>
-                <input style={{ fontSize: '20px', fontWeight: '700', height: '50px', width: '200px', borderRadius: 20, backgroundColor: '#db8c8c', textAlign: 'center', borderWidth: '0', outline: 'none' }} value={players.player1} onChange={nameHandler('player1')} />
+            <div style={inputContainer}>
+                <input style={inputBox(p1IsNext ? "green" : "")} value={players.player1} onChange={nameHandler('player1')} />
             </div>
-            <button style={{ height: '50px', width: '100px', borderRadius: 20, outline: 'none' }}>Start</button>
-            <div style={{ display: 'inline-block', margin: '3rem 16rem' }}>
-                <input style={{ fontSize: '20px', fontWeight: '700', height: '50px', width: '200px', borderRadius: 20, backgroundColor: '#db8c8c', textAlign: 'center', borderWidth: '0', outline: 'none' }} value={players.player2} onChange={nameHandler('player2')} />
+            <button style={{ height: '50px', width: '100px', borderRadius: 20, outline: 'none' }} onClick={handleGameStart}>Start</button>
+            <div style={inputContainer}>
+                <input style={inputBox(!p1IsNext ? "green" : "")} value={players.player2} onChange={nameHandler('player2')} />
+            </div>
+            <div style={{ textAlign: 'center' }}>
+                {viewTimer && <Timer setDefaultWinner={setDefaultWinner} setViewTimer={setViewTimer} defaultWinner={defaultWinner} />}
             </div>
             <Board squares={board} onClick={handleClick} />
             <div style={styles}>
-                <p>{(winner === 'X') ? players.player1 + ' Wins' : (winner === 'O') ? players.player2 + ' Wins' : null}</p>
-                {buttonHandler()}
+                <p>{(winner === "X") ? players.player1 + " Wins" : (winner === "O") ? players.player2 + " Wins" : null}</p>
+                <button onClick={handleGameReset}>
+                    Reset Game!
+                </button>
             </div>
         </>
     )
 }
 
 export default Game
-
-// 78c28c
