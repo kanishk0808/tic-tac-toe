@@ -59,11 +59,13 @@ const Game = () => {
         await setViewTimer(false);
         await setDefaultWinner(false);
         await setBoard(Array(9).fill(null));
+        await setP1isNext(true)
     }
 
     const handleGameStart = async () => {
         await setBoard(Array(9).fill(null));
         await setDefaultWinner(false);
+        await setP1isNext(true)
         winner = undefined;
         await setViewTimer(true);
     }
